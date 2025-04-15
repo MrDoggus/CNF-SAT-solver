@@ -1,0 +1,18 @@
+c FILE: staircase1.cnf
+c 
+c SOURCE: Handcrafted by James DeGruccio
+c 
+c DESCRIPTION: List of implications
+c 
+c NOTE: SAT
+p cnf 10 10
+1 0
+-1 2 0
+-1 -2 3 0
+-1 -2 -3 4 0
+-1 -2 -3 -4 5 0
+-1 -2 -3 -4 -5 6 0
+-1 -2 -3 -4 -5 -6 7 0
+-1 -2 -3 -4 -5 -6 -7 8 0
+-1 -2 -3 -4 -5 -6 -7 -8 9 0
+-1 -2 -3 -4 -5 -6 -7 -8 -9 10 0
