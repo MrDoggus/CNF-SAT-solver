@@ -1,7 +1,7 @@
 from typing import *
 from SAT_structs import *
 
-
+# Represents a node in the SAT problem tree
 class SAT_node: 
     def __init__(self, assign: Tuple[int, bool], parents: List['SAT_node']):
 
@@ -11,36 +11,22 @@ class SAT_node:
         # Variable that is assigned by left/right children 
         self.next_var: int = 0
 
+        # List of ancestors/parents
         if (parents is None): 
             self.parents: List[SAT_node] = []
         else:
             self.parents: List[SAT_node] = parents.copy()
 
-        # Appearance info
-        # Initialize appearance lists
-        # self.appears_pos = None
-        # self.appears_neg = None
 
-        self.isUnsat: bool = False
-        self.unsatCIdx: int = None
+        self.isUnsat: bool = False  # True if this all children of this node  (or the node itself) are UNSAT
+        self.unsatCIdx: int = None  # If the variable assignment at this location resulted in UNSAT, stores clause that resulted in UNSAT
         
         # Node children
         self.choice_true: SAT_node = None
-
         self.choice_false: SAT_node = None
-
-    # def assign_list(self) -> List[Tuple[int, bool]]: 
-    #     assignl = []
-
-    #     for i in self.parents:
-    #         if (i is not None):
-    #             assignl.append(i.assign)
-
-    #     if (self.assign is not None):
-    #         assignl.append(self.assign)
-
-    #     return assignl
     
+    # Generates an assignment list from the parent list. 
+    # Assignment list is indexed by the var number
     def assign_list(self, num_vars) -> List[bool]: 
         assignl = [None] * (num_vars + 1)
 
@@ -53,6 +39,8 @@ class SAT_node:
 
         return assignl
     
+    # Stores list of integers that represent a variables assignment.
+    # If a number is negitive, this represents a 0 assignment 
     def assign_list_condensed(self) -> List[int]:
         assignl = []
 
@@ -182,31 +170,6 @@ class SAT_solver:
                 for j, lit in enumerate(clause.literals):
                     if (assigns[lit.var_idx] is None):
                         return (lit.var_idx, lit.sign)
-                        # Try finding conflicts
-                        # if (j != len(clause.literals) - 1):
-                        #     return (lit.var_idx, not lit.sign)
-                        # # There is an implication if last literal (probably)
-                        # else: 
-                        #     return (lit.var_idx, lit.sign)
-                        
                     
             # Couldnt find unassigned literal
             return (0, None)
-                
-
-
-
-
-    # def simplify(self):
-    #     changes = True
-
-    #     while (changes):
-    #         changes = False
-
-    #         # Locate unit clauses
-    #         for idx, clause in enumerate(self.clauses): 
-
-    #             #unit clause found, assign 
-    #             if (len(clause.literals) == 1):
-    #                 self.assigns.append((clause.literals[0].var_idx, clause.literals[0].sign))
-    #                 self.formulaclauses.remove()

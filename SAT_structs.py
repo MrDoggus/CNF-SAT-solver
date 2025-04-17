@@ -86,6 +86,7 @@ class CNF_Formula:
                 else:
                     self.appears_neg[literal.var_idx] = True
 
+    # Given assignment list, determine if clause is SAT, UNSAT, or Unresolved
     def eval(self, assigns: List[bool], deep: bool = False) -> Tuple[CNF_IsSAT, int]:
         foundUnresolved: bool = False
         
@@ -108,7 +109,8 @@ class CNF_Formula:
             return (CNF_IsSAT.UNRESOLVED, None)
         else: 
             return (CNF_IsSAT.SAT, None)
-        
+    
+    # Given two clauses that resulted in an UNSAT, generates a new conflict clause
     def add_conflict_clause(self, cidx1: int, cidx2: int, pivot: int):
         lit_list: List[CNF_Literal] = []
         for lit in self.clauses[cidx1].literals:
