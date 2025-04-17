@@ -100,7 +100,7 @@ class CNF_Formula:
 
             # If one clause is unsat, formula will never be sat or unresolved
             if (ceval == CNF_IsSAT.UNSAT):
-                return (CNF_IsSAT.UNSAT, c)
+                return (CNF_IsSAT.UNSAT, clause)
             # Formula cant be sat if clause is unresolved
             elif (ceval == CNF_IsSAT.UNRESOLVED):
                 foundUnresolved = True
@@ -111,12 +111,12 @@ class CNF_Formula:
             return (CNF_IsSAT.SAT, None)
     
     # Given two clauses that resulted in an UNSAT, generates a new conflict clause
-    def add_conflict_clause(self, cidx1: int, cidx2: int, pivot: int):
+    def add_conflict_clause(self, c1: CNF_Clause, c2: CNF_Clause, pivot: int):
         lit_list: List[CNF_Literal] = []
-        for lit in self.clauses[cidx1].literals:
+        for lit in c1.literals:
             if (lit.var_idx != pivot):
                 lit_list.append(lit)
-        for lit in self.clauses[cidx2].literals:
+        for lit in c2.literals:
             skip = False
             # Ignore duplicates and pivot variable
             for l in lit_list:

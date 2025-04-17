@@ -18,8 +18,8 @@ class SAT_node:
             self.parents: List[SAT_node] = parents.copy()
 
 
-        self.isUnsat: bool = False  # True if this all children of this node  (or the node itself) are UNSAT
-        self.unsatCIdx: int = None  # If the variable assignment at this location resulted in UNSAT, stores clause that resulted in UNSAT
+        self.isUnsat: bool = False          # True if this all children of this node  (or the node itself) are UNSAT
+        self.unsatClause: CNF_Clause = None   # If the variable assignment at this location resulted in UNSAT, stores clause that resulted in UNSAT
         
         # Node children
         self.choice_true: SAT_node = None
@@ -76,7 +76,7 @@ class SAT_solver:
             self.iter_count += 1
 
             assigns = curr.assign_list(self.formula.num_vars)
-            sat, curr.unsatCIdx = self.formula.eval(assigns, backtracked)
+            sat, curr.unsatClause = self.formula.eval(assigns, backtracked)
 
             backtracked = False
 
@@ -139,8 +139,8 @@ class SAT_solver:
                     curr.isUnsat = True
                     if (len(curr.parents) != 0):
                         # Generate conflict clause if possible
-                        if (curr.choice_true.unsatCIdx is not None and curr.choice_false.unsatCIdx is not None):
-                            self.formula.add_conflict_clause(curr.choice_true.unsatCIdx, curr.choice_false.unsatCIdx, curr.next_var)
+                        if (curr.choice_true.unsatClause is not None and curr.choice_false.unsatClause is not None):
+                            self.formula.add_conflict_clause(curr.choice_true.unsatClause, curr.choice_false.unsatClause, curr.next_var)
                         curr = curr.parents[-1]
                         backtracked = True
                     else: # We are at the head, so formula is UNSAT
