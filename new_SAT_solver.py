@@ -13,6 +13,7 @@ if __name__ == "__main__":
     useDPLL = False
     useCDCL = False
     useVSIDS = False
+    debug = False
     
     if len(sys.argv) < 2:
         print("Usage: python new_SAT_solver.py [-dpll | -vsids | -cdcl] *.cnf")
@@ -30,8 +31,13 @@ if __name__ == "__main__":
             useCDCL = True
         elif arg == "-vsids":
             useVSIDS = True
+        elif arg == "-debug":
+            debug = True
         else:
             cnf_files.append(arg)
+
+    if (not useDPLL and not useCDCL and not useVSIDS):
+        useVSIDS = True
 
     if len(cnf_files) == 1:
         cnf_files = glob.glob(cnf_files[0])
@@ -41,23 +47,27 @@ if __name__ == "__main__":
         sys.exit(1)
 
     for cnf_file in cnf_files:
-        print("\n")
+        if (debug):
+            print("\n")
         try:
             start_time = time.time()
         
             if useDPLL == True:
-                print(f"--- Solving {cnf_file} using DPLL ---")
+                if (debug): 
+                    print(f"--- Solving {cnf_file} using DPLL ---")
                 clauses = parse_dimacs_file(cnf_file)
                 (solution, iter_count) = dpll(clauses, {}, 0)
             else:
                 formula = CNF_Formula.from_dimacs_file(cnf_file)
-                solver = SAT_solver(formula)
+                solver = SAT_solver(formula, log=debug)
                 if useVSIDS == True:
-                    print(f"--- Solving {cnf_file} using CDCL w/ VSIDS ---")
+                    if (debug):
+                        print(f"--- Solving {cnf_file} using CDCL w/ VSIDS ---")
                     solution = solver.solve(useVSIDS=True)
                     iter_count = solver.iter_count
                 elif useCDCL == True:
-                    print(f"--- Solving {cnf_file} using CDCL ---")
+                    if (debug): 
+                        print(f"--- Solving {cnf_file} using CDCL ---")
                     solution = solver.solve()  # Default useVSIDS=False
                     iter_count = solver.iter_count
 
@@ -70,8 +80,9 @@ if __name__ == "__main__":
             else:
                 print("UNSAT")
 
-            print(f"Number of iterations: {iter_count:.2f}")
-            print(f"Processing time: {single_file_processing_time:.4f} seconds")
+            if (debug):
+                print(f"Number of iterations: {iter_count:.2f}")
+                print(f"Processing time: {single_file_processing_time:.4f} seconds")
                 
             total_iterations += iter_count
             file_count += 1
@@ -83,6 +94,7 @@ if __name__ == "__main__":
 
     avg_iter_count = total_iterations / file_count
 
-    print("\n==============================")
-    print(f"Total Processing time: {total_processing_time:.4f} seconds")
-    print(f"Average number of iterations over {file_count} successful files: {avg_iter_count:.2f}")
+    if (debug):
+        print("\n==============================")
+        print(f"Total Processing time: {total_processing_time:.4f} seconds")
+        print(f"Average number of iterations over {file_count} successful files: {avg_iter_count:.2f}")
