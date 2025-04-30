@@ -74,11 +74,12 @@ if __name__ == "__main__":
             end_time = time.time()
             single_file_processing_time = end_time - start_time
             
-            if solution:
-                print("SAT")
-                print("Assignment:", solution)
-            else:
-                print("UNSAT")
+            if (solution is None):
+                print("RESULT:UNSAT")
+            else: 
+                print("RESULT:SAT")
+                assignStr = "ASSIGNMENT:" + " ".join([f"{i}={"1" if solution[i] else "0"}" for i in range(1,len(solution))])
+                print(assignStr)
 
             if (debug):
                 print(f"Number of iterations: {iter_count:.2f}")
@@ -92,9 +93,8 @@ if __name__ == "__main__":
             continue  # Skip broken files
 
 
-    avg_iter_count = total_iterations / file_count
-
     if (debug):
+        avg_iter_count = total_iterations / file_count
         print("\n==============================")
         print(f"Total Processing time: {total_processing_time:.4f} seconds")
         print(f"Average number of iterations over {file_count} successful files: {avg_iter_count:.2f}")
