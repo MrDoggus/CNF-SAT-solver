@@ -19,9 +19,6 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python new_SAT_solver.py [-dpll | -no_vsids | -debug | -metrics] *.cnf")
         sys.exit(1)
-
-    #cnf_files = sys.argv[1:]
-    #cnf_files = sys.argv[(len(sys.argv)-1):]
     
     args = sys.argv[1:]
     cnf_files = []
