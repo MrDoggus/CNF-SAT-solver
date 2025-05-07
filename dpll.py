@@ -29,19 +29,21 @@ def getUnsatisfiedClauses(clauses, assignment):
             unsatisfied.append(clause)
     return unsatisfied
 
-def dpll(clauses, assignment, depth):
+def dpll(clauses, assignment, depth, log=False):
     if depth == 0:
         dpll.total_iterations = 0
         
     dpll.total_iterations += 1
 
     indent = "\t" * depth
-##    print(f"{indent}dpll")
-##    print(f"{indent}\tclauses: {clauses}")
-##    print(f"{indent}\tassignment: {assignment}")
+    if log == True:
+        print(f"{indent}dpll")
+        print(f"{indent}\tclauses: {clauses}")
+        print(f"{indent}\tassignment: {assignment}")
 
     clauses = getUnsatisfiedClauses(clauses, assignment)
-##    print(f"{indent}\tUnsatisfied clauses: {clauses}")
+    if log == True:
+        print(f"{indent}\tUnsatisfied clauses: {clauses}")
 
     if len(clauses) == 0:
         return (assignment, dpll.total_iterations)
@@ -50,24 +52,28 @@ def dpll(clauses, assignment, depth):
     for clause in clauses:
         simplifiedClause = [lit for lit in clause if assignment.get(abs(lit)) != (-lit > 0)]
         if not simplifiedClause:
-##            print(f"{indent}\tConflict for {assignment}")
+            if log == True:
+                print(f"{indent}\tConflict for {assignment}")
             return (False, dpll.total_iterations)
         simplifiedClauses.append(simplifiedClause)
 
-##    print(f"{indent}\tsimplified_clause: {simplifiedClauses}")
+    if log == True:
+        print(f"{indent}\tsimplified_clause: {simplifiedClauses}")
 
     variable = abs(simplifiedClauses[0][0])
 
-##    print(f"{indent}\tSet Assignment Var {variable} to True")
+    if log == True:
+        print(f"{indent}\tSet Assignment Var {variable} to True")
     assignmentCopy = dict(assignment)
     assignmentCopy[variable] = True
-    (result, iterations) = dpll(simplifiedClauses, assignmentCopy, depth + 1)
+    (result, iterations) = dpll(simplifiedClauses, assignmentCopy, depth + 1, log)
     
     if result == False:
-##        print(f"{indent}\tSet Assignment Var {variable} to False")
+        if log == True:
+            print(f"{indent}\tSet Assignment Var {variable} to False")
         assignmentCopy = dict(assignment)
         assignmentCopy[variable] = False
-        (result, iterations) = dpll(simplifiedClauses, assignmentCopy, depth + 1)
+        (result, iterations) = dpll(simplifiedClauses, assignmentCopy, depth + 1, log)
         if result:
             return (result, dpll.total_iterations)
         else:
