@@ -17,7 +17,7 @@ if __name__ == "__main__":
     showMetrics = False
     
     if len(sys.argv) < 2:
-        print("Usage: python new_SAT_solver.py [-dpll | -no_vsids] *.cnf")
+        print("Usage: python new_SAT_solver.py [-dpll | -no_vsids | -debug | -metrics] *.cnf")
         sys.exit(1)
 
     #cnf_files = sys.argv[1:]
