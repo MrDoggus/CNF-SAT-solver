@@ -73,7 +73,7 @@ if __name__ == "__main__":
                 print("RESULT:UNSAT")
             else: 
                 print("RESULT:SAT")
-                assignStr = "ASSIGNMENT:" + " ".join([f"{i}={"1" if solution[i] else "0"}" for i in range(1,len(solution))])
+                assignStr = "ASSIGNMENT:" + " ".join([f"{i}={'1' if solution[i] else '0'}" for i in range(1,len(solution))])
                 print(assignStr)
 
             if (debug or showMetrics):
