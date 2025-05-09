@@ -50,6 +50,27 @@ class CNF_Clause:
             self.sat = CNF_IsSAT.UNSAT
             return CNF_IsSAT.UNSAT
             
+            
+    def is_unit(self, assigns: List[bool]) -> Optional[Tuple[int, bool]]:
+        #Checks if this clause is unit under the given assignments.
+        unassigned = None
+
+        for lit in self.literals:
+            value = assigns[lit.var_idx]
+
+            # If any literal is satisfied, clause is not unit
+            if value is not None and value == lit.sign:
+                return None
+
+            # Track unassigned literals
+            if value is None:
+                if unassigned is not None:
+                    # More than one unassigned → not unit
+                    return None
+                unassigned = (lit.var_idx, lit.sign)
+
+        return unassigned  # Will be (var_idx, sign) if unit, else None
+        
     def __str__(self):
         return f"({' + '.join(map(str, self.literals))})"
 
@@ -130,8 +151,9 @@ class CNF_Formula:
         if (len(c.literals) <= self.max_conflict_size):
             # print(f"Conflict clause added: {c.__str__()}")
             bisect.insort(self.clauses, c, key=lambda x: len(x.literals))
+            return c
         
-        return c
+        return none
 
 
     @staticmethod

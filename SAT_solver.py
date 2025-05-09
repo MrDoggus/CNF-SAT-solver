@@ -80,6 +80,21 @@ class SAT_solver:
             self.iter_count += 1
 
             assigns = curr.assign_list(self.formula.num_vars)
+            
+            
+            # Update assignment with implications
+            oldAssigns = list(assigns)
+            reduce=True
+            wasReduced = 0
+            while reduce:
+                reduce = False
+                for clause in self.formula.clauses:
+                    result = clause.is_unit(assigns)
+                    if result is not None:
+                        assigns[result[0]] = result[1]
+                        reduce = True
+                        wasReduced += 1
+            
             sat, curr.unsatClause = self.formula.eval(assigns, backtracked)
 
             backtracked = False
@@ -145,7 +160,7 @@ class SAT_solver:
                         # Generate conflict clause if possible
                         if (curr.choice_true.unsatClause is not None and curr.choice_false.unsatClause is not None):
                             new_clause = self.formula.add_conflict_clause(curr.choice_true.unsatClause, curr.choice_false.unsatClause, curr.next_var)
-                            if useVSIDS == True:
+                            if new_clause is not None and useVSIDS == True:
                                 vsids.update_activity_factors(new_clause)
                                 vsids.increase_bump_amount()
                             #print(f"Adding f{new_clause}")
