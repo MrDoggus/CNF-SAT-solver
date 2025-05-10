@@ -64,13 +64,17 @@ class SAT_solver:
 
     # Solves SAT problem
     # Returns assignList if SAT, None if unsat
-    def solve(self) -> List[bool]:
+    def solve(self, useVSIDS = False) -> List[bool]:
 
         # Create head
         head = SAT_node(assign = None, parents = [])
         curr = head
         backtracked = False
         self.iter_count = 0
+        
+        vsids  = None
+        if useVSIDS == True:
+            vsids = VSIDS(self.formula)
 
         while (True):
             self.iter_count += 1
@@ -91,7 +95,7 @@ class SAT_solver:
             elif (sat == CNF_IsSAT.UNRESOLVED):
                 # If next var hasnt been choosen for this node, choose a next var
                 if (curr.next_var == 0): 
-                    choice = SAT_solver.decider_iter.choice(self.formula, assigns)
+                    choice = SAT_solver.decider_iter.choice(self.formula, assigns, vsids)
                     if (choice[0] != 0):
                         curr.next_var = choice[0]
                     else: 
@@ -140,7 +144,12 @@ class SAT_solver:
                     if (len(curr.parents) != 0):
                         # Generate conflict clause if possible
                         if (curr.choice_true.unsatClause is not None and curr.choice_false.unsatClause is not None):
-                            self.formula.add_conflict_clause(curr.choice_true.unsatClause, curr.choice_false.unsatClause, curr.next_var)
+                            new_clause = self.formula.add_conflict_clause(curr.choice_true.unsatClause, curr.choice_false.unsatClause, curr.next_var)
+                            if useVSIDS == True:
+                                vsids.update_activity_factors(new_clause)
+                                vsids.increase_bump_amount()
+                            #print(f"Adding f{new_clause}")
+
                         curr = curr.parents[-1]
                         backtracked = True
                     else: # We are at the head, so formula is UNSAT
@@ -159,17 +168,33 @@ class SAT_solver:
     class decider_iter:
 
         @staticmethod
-        def choice(formula: CNF_Formula, assigns: List[bool]) -> Tuple[int, bool]:
-            
-            # Find unresolved clause
-            for i, clause in enumerate(formula.clauses):
-                if clause.sat == CNF_IsSAT.SAT: 
-                    continue
+        def choice(formula: CNF_Formula, assigns: List[bool], vsids:VSIDS = None) -> Tuple[int, bool]:
 
-                # Find unassigned literal in clause
-                for j, lit in enumerate(clause.literals):
-                    if (assigns[lit.var_idx] is None):
-                        return (lit.var_idx, lit.sign)
-                    
+            if vsids is not None:
+                for factor in vsids.get_activity_factors():
+                    var_idx = factor[0][0]
+                    var_sign = factor[0][1]
+                    if (assigns[var_idx] is None):
+                        for clause in formula.clauses:
+                            if clause.sat == CNF_IsSAT.SAT:
+                                continue
+                            for lit in clause.literals:
+                                if lit.var_idx == var_idx and var_sign == lit.sign:
+    #                                print(f"try:{var_idx} {var_sign}")
+                                    return (var_idx, var_sign)
+                                else:
+                                    pass
+    #                                print(f"not in clause:{clause}")
+            else:
+                # Find unresolved clause
+                for i, clause in enumerate(formula.clauses):
+                    if clause.sat == CNF_IsSAT.SAT:
+                        continue
+
+                    # Find unassigned literal in clause
+                    for j, lit in enumerate(clause.literals):
+                        if (assigns[lit.var_idx] is None):
+    #                        print(f"try:{lit.var_idx} {lit.sign}")
+                            return (lit.var_idx, lit.sign)
             # Couldnt find unassigned literal
             return (0, None)

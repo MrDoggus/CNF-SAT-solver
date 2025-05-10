@@ -8,17 +8,16 @@ class CNF_IsSAT(Enum):
     SAT = 1
     UNRESOLVED = 2
 
-class CNF_Literal: 
+class CNF_Literal:
     def __init__(self, var_idx: int, sign: bool):
         self.var_idx: int = var_idx  # Variable index
-        self.sign: bool = sign        # If false, variable is inverted
+        self.sign: bool = sign       # If false, variable is inverted
 
     def __str__(self):
         if (self.sign):
             return f"x{self.var_idx}"
         else:
             return f"x{self.var_idx}\'"
- 
 
 class CNF_Clause: 
     def __init__(self, literals: List[CNF_Literal], isConflict = False):
@@ -111,7 +110,7 @@ class CNF_Formula:
             return (CNF_IsSAT.SAT, None)
     
     # Given two clauses that resulted in an UNSAT, generates a new conflict clause
-    def add_conflict_clause(self, c1: CNF_Clause, c2: CNF_Clause, pivot: int):
+    def add_conflict_clause(self, c1: CNF_Clause, c2: CNF_Clause, pivot: int) -> CNF_Clause:
         lit_list: List[CNF_Literal] = []
         for lit in c1.literals:
             if (lit.var_idx != pivot):
@@ -131,6 +130,8 @@ class CNF_Formula:
         if (len(c.literals) <= self.max_conflict_size):
             # print(f"Conflict clause added: {c.__str__()}")
             bisect.insort(self.clauses, c, key=lambda x: len(x.literals))
+        
+        return c
 
 
     @staticmethod
@@ -167,7 +168,38 @@ class CNF_Formula:
                 sign = lit > 0
                 literals.append(CNF_Literal(abs(lit), sign))
 
+        #print(CNF_Literal.get_instance_counts())
+        #exit()
         return CNF_Formula(clauses, num_vars)
     
     def __str__(self):
         return f"".join(map(str,self.clauses))
+
+
+class VSIDS:
+    def __init__(self, formula: CNF_Formula):
+        self.activity_factors = {}
+        self.decay_factor = 0.95
+        self.bump_amount  = 1.0
+        
+        for clause in formula.clauses:
+            for literal in clause.literals:
+                key = (literal.var_idx, literal.sign)
+
+                if key not in self.activity_factors:
+                    self.activity_factors[key] = 0
+
+    def get_activity_factors(self):
+        """Return a list of ((var_idx, sign), count) tuples sorted by count descending."""
+        return sorted(self.activity_factors.items(), key=lambda item: item[1], reverse=True)
+    
+    def increase_bump_amount(self):
+        self.bump_amount /= self.decay_factor
+            
+    def update_activity_factors(self, new_clause:CNF_Clause):
+        for literal in new_clause.literals:
+            key = (literal.var_idx, literal.sign)
+            self.activity_factors[key] += self.bump_amount
+
+    def __str__(self):
+        return f"VSIDS:bump_amount = {self.bump_amount}, activity_factors = {self.get_activity_factors()}"
